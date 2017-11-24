@@ -54,7 +54,7 @@ List NetCDF data files
 files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=T)
 
 # Show files
-files
+basename(files)
 ```
 
 Subset NetCDF file
@@ -78,14 +78,25 @@ Summarise NetCDF file
 ```{r}
 # Summarise daily NetCDF file for 10 years 
 summariseNC(files, startdate=2000, enddate=2009, group_col=c("month", "year"))
+```
 
+```{r}
 # Summarise daily NetCDF files for all years
 yearly_tas <- summariseNC(files, group_col="year")
+
+# Calculate mean annual temperature for Germany
 yearmean_tas <- as.data.frame(raster::cellStats(yearly_tas, stat="mean"))
 colnames(yearmean_tas) <- "mean"
 yearmean_tas$date <- as.Date(sub("X", "", rownames(yearmean_tas)), format="%Y")
 yearmean_tas$mean <- yearmean_tas$mean - 273.15
-plot(yearmean_tas$mean ~ yearmean_tas$date)
+head(yearmean_tas)
+```
+
+Summarise NetCDF file using CDO commands
+
+```{r}
+#?mergeNC()
+#?aggregateNC()
 ```
 
 CellStats NetCDF file
