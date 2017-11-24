@@ -33,7 +33,7 @@ To *use* the package, it can be installed directly from GitHub using the `devtoo
 
 ```{r, eval=FALSE}
 # If not yet installed, install the devtools package
-install.packages("devtools")
+#install.packages("devtools")
 
 # Download the package from GitHub
 devtools::install_github("RS-eco/processNC")
@@ -77,10 +77,10 @@ Summarise NetCDF file
 
 ```{r}
 # Summarise daily NetCDF file for 10 years 
-summariseNC(files, startdate=2000, enddate=2009, group_col=c("year", "month"))
+summariseNC(files, startdate=2000, enddate=2009, group_col=c("month", "year"))
 
 # Summarise daily NetCDF files for all years
-yearly_tas <- summariseNC(files, group_col = "year")
+yearly_tas <- summariseNC(files, group_col="year")
 yearmean_tas <- as.data.frame(raster::cellStats(yearly_tas, stat="mean"))
 colnames(yearmean_tas) <- "mean"
 yearmean_tas$date <- as.Date(sub("X", "", rownames(yearmean_tas)), format="%Y")

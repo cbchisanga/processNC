@@ -83,7 +83,7 @@ summariseNC <- function(files, startdate='', enddate='', ext=NA, group_col=c("ye
     
     # Define start date
     if(is.na(startdate)){
-      startdate <- time[1]
+      startdate <- as.Date(time[1])
     } else if(class(startdate) != "Date"){
       startdate <- as.Date(paste0(startdate, "-01-01"))
     }
@@ -169,7 +169,7 @@ summariseNC <- function(files, startdate='', enddate='', ext=NA, group_col=c("ye
       }
       
       # Summarise according to group_col
-      if(identical(group_col, c("month", "year"))){
+      if(identical(group_col, c("month", "year")) | identical(group_col, c("year", "month"))){
         data$year <- lubridate::year(data$date)
         data$month <- lubridate::month(data$date)
         # Remove date column for summary
@@ -228,22 +228,23 @@ summariseNC <- function(files, startdate='', enddate='', ext=NA, group_col=c("ye
     colnames(data)[ncol(data)] <- "cv"
     data$x <- as.numeric(data$x)
     data$y <- as.numeric(data$y)
-    sp::coordinates(data) <- c("x","y")
-    sp::gridded(data) <- TRUE
-    crs(data) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
     if("month" %in% group_col){
-      r_z <- raster::brick(lapply(unique(data$month), FUN=function(x) stack(data[data$month == x,], "avg")))
+      r_z <- data %>% dplyr::select(-cv) %>% tidyr::spread(month, avg)
+      if("year" %in% group_col){r_z <- r_z %>% dplyr::select(-year)}
+      r_z <- raster::rasterFromXYZ(r_z)
       names(r_z) <- month.name
-      r_cv <- raster::brick(lapply(unique(data$month), FUN=function(x) stack(data[data$month == x,], "cv")))
-      names(r_cv) <- month.name 
+      r_cv <- data %>% dplyr::select(-avg) %>% tidyr::spread(month, cv)
+      if("year" %in% group_col){r_cv <- r_cv %>% dplyr::select(-year)}
+      r_cv <- raster::rasterFromXYZ(r_cv)
+      names(r_cv) <- month.name
       if(class(mask) == "SpatialPolygonsDataFrame" | class(mask) == "RasterLayer"){
         r_z <- raster::mask(r_z, mask)
         r_cv <- raster::mask(r_cv, mask)
       }
-    } else if(identical(group_col,"year")){
-      r_z <- raster::brick(lapply(unique(data$year), FUN=function(x) stack(data[data$year == x,], "avg")))
+    } else if(identical(group_col, "year")){
+      r_z <- raster::rasterFromXYZ(data %>% dplyr::select(-cv) %>% tidyr::spread(year, avg))
       names(r_z) <- unique(data$year)
-      r_cv <- raster::brick(lapply(unique(data$year), FUN=function(x) stack(data[data$year == x,], "cv")))
+      r_cv <- raster::rasterFromXYZ(data %>% dplyr::select(-avg) %>% tidyr::spread(year, cv))
       names(r_cv) <- unique(data$year)
       if(class(mask) == "SpatialPolygonsDataFrame" | class(mask) == "RasterLayer"){
         r_z <- raster::mask(r_z, mask)
