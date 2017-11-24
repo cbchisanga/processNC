@@ -18,6 +18,8 @@ For this, the package mainly consists of two functions:
 
 In addition, there is also a function called `summariseRaster`, which allows a similar implementation to the `summariseNC` function, but using raster files rather than NetCDF files.
 
+There are also two functions (`mergeNC` and `aggregateNC`), which together provide a much faster alternative to the `summariseNC` function, but those functions rely on the Climate Data Operators (CDO) software (<https://code.mpimet.mpg.de/projects/cdo>). This software needs to be installed to use those two functions in R.
+
 <!-- You can learn more about the different functions in `vignette("processNC")`.-->
 Installation
 ------------
@@ -48,14 +50,12 @@ List NetCDF data files
 files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=T)
 
 # Show files
-files
+basename(files)
 ```
 
-    [1] "C:/Users/mbiber/Documents/R/win-library/3.4/processNC/extdata/tas_ewembi_deu_1979_1980.nc"
-    [2] "C:/Users/mbiber/Documents/R/win-library/3.4/processNC/extdata/tas_ewembi_deu_1981_1990.nc"
-    [3] "C:/Users/mbiber/Documents/R/win-library/3.4/processNC/extdata/tas_ewembi_deu_1991_2000.nc"
-    [4] "C:/Users/mbiber/Documents/R/win-library/3.4/processNC/extdata/tas_ewembi_deu_2001_2010.nc"
-    [5] "C:/Users/mbiber/Documents/R/win-library/3.4/processNC/extdata/tas_ewembi_deu_2011_2013.nc"
+    [1] "tas_ewembi_deu_1979_1980.nc" "tas_ewembi_deu_1981_1990.nc"
+    [3] "tas_ewembi_deu_1991_2000.nc" "tas_ewembi_deu_2001_2010.nc"
+    [5] "tas_ewembi_deu_2011_2013.nc"
 
 Subset NetCDF file
 
@@ -125,49 +125,23 @@ summariseNC(files, startdate=2000, enddate=2009, group_col=c("month", "year"))
 ``` r
 # Summarise daily NetCDF files for all years
 yearly_tas <- summariseNC(files, group_col="year")
+
+# Calculate mean annual temperature for Germany
 yearmean_tas <- as.data.frame(raster::cellStats(yearly_tas, stat="mean"))
 colnames(yearmean_tas) <- "mean"
-yearmean_tas$date <- as.Date(sub("X", "", rownames(yearmean_tas)), format="%Y")
+yearmean_tas <- tibble::rownames_to_column(yearmean_tas, var="year")
+yearmean_tas$year <- sub("X", "", yearmean_tas$year)
 yearmean_tas$mean <- yearmean_tas$mean - 273.15
-yearmean_tas
+head(yearmean_tas)
 ```
 
-               mean       date
-    X1979  8.002458 1979-11-24
-    X1980  7.866304 1980-11-24
-    X1981  8.495996 1981-11-24
-    X1982  9.263755 1982-11-24
-    X1983  9.418830 1983-11-24
-    X1984  8.307544 1984-11-24
-    X1985  7.823515 1985-11-24
-    X1986  8.319883 1986-11-24
-    X1987  7.750518 1987-11-24
-    X1988  9.400560 1988-11-24
-    X1989  9.913595 1989-11-24
-    X1990  9.918391 1990-11-24
-    X1991  8.852507 1991-11-24
-    X1992  9.747699 1992-11-24
-    X1993  8.843051 1993-11-24
-    X1994 10.058122 1994-11-24
-    X1995  9.277613 1995-11-24
-    X1996  7.502323 1996-11-24
-    X1997  9.264415 1997-11-24
-    X1998  9.365378 1998-11-24
-    X1999  9.856261 1999-11-24
-    X2000 10.213450 2000-11-24
-    X2001  9.327813 2001-11-24
-    X2002  9.823712 2002-11-24
-    X2003  9.659545 2003-11-24
-    X2004  9.237923 2004-11-24
-    X2005  9.365806 2005-11-24
-    X2006  9.975323 2006-11-24
-    X2007 10.166984 2007-11-24
-    X2008  9.845317 2008-11-24
-    X2009  9.646218 2009-11-24
-    X2010  8.258689 2010-11-24
-    X2011 10.139911 2011-11-24
-    X2012  9.535448 2012-11-24
-    X2013  9.134198 2013-11-24
+      year     mean
+    1 1979 8.002458
+    2 1980 7.866304
+    3 1981 8.495996
+    4 1982 9.263755
+    5 1983 9.418830
+    6 1984 8.307544
 
 Summarise NetCDF file using CDO commands
 

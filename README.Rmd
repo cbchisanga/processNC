@@ -25,8 +25,10 @@ For this, the package mainly consists of two functions:
 
 In addition, there is also a function called `summariseRaster`, which allows a similar implementation to the `summariseNC` function, but using raster files rather than NetCDF files.
 
-<!-- You can learn more about the different functions in `vignette("processNC")`.-->
+There are also two functions (`mergeNC` and `aggregateNC`), which together provide a much faster alternative to the `summariseNC` function, but those functions rely on the Climate Data Operators (CDO) software (https://code.mpimet.mpg.de/projects/cdo). This software needs to be installed to use those two functions in R.  
 
+<!-- You can learn more about the different functions in `vignette("processNC")`.-->
+  
 ## Installation
 
 To *use* the package, it can be installed directly from GitHub using the `devtools` package. 
@@ -87,7 +89,8 @@ yearly_tas <- summariseNC(files, group_col="year")
 # Calculate mean annual temperature for Germany
 yearmean_tas <- as.data.frame(raster::cellStats(yearly_tas, stat="mean"))
 colnames(yearmean_tas) <- "mean"
-yearmean_tas$date <- as.Date(sub("X", "", rownames(yearmean_tas)), format="%Y")
+yearmean_tas <- tibble::rownames_to_column(yearmean_tas, var="year")
+yearmean_tas$year <- sub("X", "", yearmean_tas$year)
 yearmean_tas$mean <- yearmean_tas$mean - 273.15
 head(yearmean_tas)
 ```
