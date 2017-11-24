@@ -19,7 +19,7 @@
 #' summariseNC(files, startdate=2000, enddate=2009)
 #' @export summariseNC
 #' @name summariseNC
-summariseNC <- function(files, startdate='', enddate='', ext=NA, group_col=c("year", "month"),
+summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("year", "month"),
                         cores=NA, filename1='', filename2='', 
                         format="GTiff", overwrite=FALSE){
   if(overwrite==FALSE & filename1!="" & file.exists(filename1)){
@@ -80,22 +80,28 @@ summariseNC <- function(files, startdate='', enddate='', ext=NA, group_col=c("ye
     }else if (ncdf4::ncvar_get(nc, nc$dim$time)[1] == 1){
       time <- timeref + ncdf4::ncvar_get(nc, nc$dim$time) - 1
     }
-    
-    # Define start date
-    if(is.na(startdate)){
-      startdate <- as.Date(time[1])
-    } else if(class(startdate) != "Date"){
-      startdate <- as.Date(paste0(startdate, "-01-01"))
-    }
     # Close NC file again
     ncdf4::nc_close(nc)
     
+    # Define start date
+    if(is.na(startdate)){
+      startdate <- time[1]
+    } else if(class(startdate) != "Date"){
+      startdate <- as.Date(paste0(startdate, "-01-01"))
+    }
+
     # Define end date
     if(is.na(enddate)){
       nc <- ncdf4::nc_open(files[length(files)])
+      timeref <- as.Date(strsplit(nc$dim[[nc$ndims]]$units, " ")[[1]][3]) 
+      if(ncdf4::ncvar_get(nc, nc$dim$time)[1] == 0){
+        time <- timeref + ncdf4::ncvar_get(nc, nc$dim$time)
+      }else if (ncdf4::ncvar_get(nc, nc$dim$time)[1] == 1){
+        time <- timeref + ncdf4::ncvar_get(nc, nc$dim$time) - 1
+      }
       enddate <- time[length(time)]
       ncdf4::nc_close(nc)
-    }else if(class(enddate) != "Date"){
+    } else if(class(enddate) != "Date"){
       enddate <-  as.Date(paste0(enddate, "-12-31"))
     }
     # Calculate the number of cores available and leave one for basic use

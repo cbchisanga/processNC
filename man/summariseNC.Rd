@@ -4,7 +4,7 @@
 \alias{summariseNC}
 \title{Summarise values of one or multiple NetCDF Files over time and/or space}
 \usage{
-summariseNC(files, startdate = "", enddate = "", ext = NA,
+summariseNC(files, startdate = NA, enddate = NA, ext = NA,
   group_col = c("year", "month"), cores = NA, filename1 = "",
   filename2 = "", format = "GTiff", overwrite = FALSE)
 }

@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning=FALSE, comment=NA, message=FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, comment=NA, message=FALSE, cache=FALSE)
 ```
 
 ## Overview
@@ -91,8 +91,8 @@ plot(yearmean_tas$mean ~ yearmean_tas$date)
 CellStats NetCDF file
 
 ```{r}
-# Summarise daily NetCDF file for 10 years 
-cellstatsNC(files, startdate=2000, enddate=2009)
+# Summarise daily NetCDF file for 10 years and show first 6 values
+head(cellstatsNC(files, startdate=2000, enddate=2009))
 
 # Summarise daily NetCDF files without time limit
 mean_daily_temp <- cellstatsNC(files)
