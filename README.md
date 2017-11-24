@@ -143,13 +143,15 @@ head(yearmean_tas)
     5 1983 9.418830
     6 1984 8.307544
 
+<!--
 Summarise NetCDF file using CDO commands
 
-``` r
+
+```r
 #?mergeNC()
 #?aggregateNC()
 ```
-
+-->
 CellStats NetCDF file
 
 ``` r
@@ -167,7 +169,7 @@ head(cellstatsNC(files, startdate=2000, enddate=2009))
 
 ``` r
 # Summarise daily NetCDF files without time limit
-mean_daily_temp <- cellstatsNC(files)
+mean_daily_temp <- cellstatsNC(files, stat="mean")
 
 # Summarise annual mean temperature of Germany 
 mean_daily_temp$year <- lubridate::year(mean_daily_temp$date)
@@ -175,8 +177,16 @@ mean_daily_temp$mean <- mean_daily_temp$mean - 273.15
 mean_annual_temp <- aggregate(mean ~ year, mean_daily_temp, mean)
 ```
 
+<!--
 Summarise raster file
 
-``` r
-#?summariseRaster()
+
+```r
+# Create raster stack
+library(raster)
+s <- stack(lapply(1:5, function(i) setValues(raster(nrow=10, ncol=10), rnorm(ncell(r), i, 3))))
+
+# Summarise Data
+summariseRaster(s)
 ```
+-->

@@ -6,7 +6,7 @@
 #' @param files \code{character}. A filepath or list of filepaths. Filepath should lead to a NetCDF file.
 #' @param startdate \code{integer}. Start year.
 #' @param enddate \code{integer}. End year.
-#' @param fun \code{character}. Currently only works with mean.
+#' @param stat \code{character}. Currently only works with mean.
 #' @param ext \code{extent}. If present the NetCDF file is subset by this extent.
 #' @param cores \code{integer}. Number of cores for parallel computing. If this argument is not provided, at least half the number of availabe cores will be used.
 #' @param filename \code{character}. Output filename of the averaged data. If this argument is not provided, result will not be written to disk.
@@ -16,8 +16,7 @@
 #' cellstatsNC_old(files, startdate=2000, enddate=2010)
 #' @export cellstatsNC
 #' @name cellstatsNC
-cellstatsNC <- function(files, startdate=NA, enddate=NA, ext="", fun="mean",
-                        cores=NA, filename=''){
+cellstatsNC <- function(files, startdate=NA, enddate=NA, ext="", cores=NA, filename='', stat="mean"){
   if(filename!="" & file.exists(filename)){
     r_z <- readr::read_csv(filename)
   } else{
@@ -99,7 +98,7 @@ cellstatsNC <- function(files, startdate=NA, enddate=NA, ext="", fun="mean",
     
     # Load variables
     parallel::clusterExport(cl, list("files", "start", "count", "name", "cores", 
-                                     "fun", "startdate", "enddate"), 
+                                     "stat", "startdate", "enddate"), 
                             envir=environment())
     
     # Load packages for cluster
@@ -151,8 +150,8 @@ cellstatsNC <- function(files, startdate=NA, enddate=NA, ext="", fun="mean",
             data <- raster::mask(data, mask)
             
             # Calculate mean
-            data <- as.data.frame(raster::cellStats(data, stat='mean')); gc()
-          } else{
+            data <- as.data.frame(raster::cellStats(data, stat=stat)); gc()
+          } else if(stat == "mean"){
             # Calculate mean
             data <- as.data.frame(apply(data, 3, FUN=function(x) mean(x, na.rm = TRUE))); gc()
           }
@@ -173,7 +172,7 @@ cellstatsNC <- function(files, startdate=NA, enddate=NA, ext="", fun="mean",
     
     # Combine matrices
     data <- do.call("rbind", data)
-    colnames(data) <- "mean"
+    colnames(data) <- stat
     data$date <- seq(startdate, enddate, length.out=nrow(data))
     
     # Save to file
