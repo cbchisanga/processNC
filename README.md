@@ -1,7 +1,7 @@
 processNC - R Package for processing and analysing (large) NetCDF files in R
 ================
 Matthias Biber
-2017-11-24
+2017-12-01
 
 Overview
 --------
@@ -109,7 +109,7 @@ Summarise NetCDF file
 
 ``` r
 # Summarise daily NetCDF file for 10 years 
-summariseNC(files, startdate=2000, enddate=2009, group_col=c("month", "year"))
+summariseNC(files[4], startdate=2000, enddate=2009, group_col=c("month", "year"))
 ```
 
     class       : RasterBrick 
@@ -118,9 +118,9 @@ summariseNC(files, startdate=2000, enddate=2009, group_col=c("month", "year"))
     extent      : 47.5, 55, 6, 15  (xmin, xmax, ymin, ymax)
     coord. ref. : NA 
     data source : in memory
-    names       : January, February,  March,  April,    May,   June,   July, August, September, October, November, December 
-    min values  :  269.89,   271.47, 274.21, 278.55, 283.54, 286.53, 287.96, 287.80,    283.78,  280.54,   274.96,   271.06 
-    max values  :  276.62,   277.55, 280.30, 284.65, 289.23, 292.27, 293.59, 293.19,    289.14,  284.96,   280.78,   277.04 
+    names       :  January, February,    March,    April,      May,     June,     July,   August, September,  October, November, December 
+    min values  : 278.7788, 278.5410, 280.7607, 279.3333, 278.7059, 278.8946, 278.7549, 278.2934,  280.0584, 278.5822, 280.1925, 278.9029 
+    max values  : 284.4923, 284.1783, 285.9021, 284.4390, 284.3235, 284.5334, 284.3123, 283.7695,  285.2472, 284.1391, 285.0622, 284.1537 
 
 ``` r
 # Summarise daily NetCDF files for all years
@@ -177,16 +177,18 @@ mean_daily_temp$mean <- mean_daily_temp$mean - 273.15
 mean_annual_temp <- aggregate(mean ~ year, mean_daily_temp, mean)
 ```
 
-<!--
 Summarise raster file
+
+<!--
+Need to update summariseRaster function, so it works more generally, compare with summariseNC.
 
 
 ```r
 # Create raster stack
 library(raster)
-s <- stack(lapply(1:5, function(i) setValues(raster(nrow=10, ncol=10), rnorm(ncell(r), i, 3))))
+r_file <- stack(files[1])
 
 # Summarise Data
-summariseRaster(s)
+summariseRaster(files=r_file)
 ```
 -->

@@ -79,7 +79,7 @@ Summarise NetCDF file
 
 ```{r}
 # Summarise daily NetCDF file for 10 years 
-summariseNC(files, startdate=2000, enddate=2009, group_col=c("month", "year"))
+summariseNC(files[4], startdate=2000, enddate=2009, group_col=c("month", "year"))
 ```
 
 ```{r}
@@ -119,15 +119,17 @@ mean_daily_temp$mean <- mean_daily_temp$mean - 273.15
 mean_annual_temp <- aggregate(mean ~ year, mean_daily_temp, mean)
 ```
 
-<!--
 Summarise raster file
+
+<!--
+Need to update summariseRaster function, so it works more generally, compare with summariseNC.
 
 ```{r, eval=F}
 # Create raster stack
 library(raster)
-s <- stack(lapply(1:5, function(i) setValues(raster(nrow=10, ncol=10), rnorm(ncell(r), i, 3))))
+r_file <- stack(files[1])
 
 # Summarise Data
-summariseRaster(s)
+summariseRaster(files=r_file)
 ```
 -->

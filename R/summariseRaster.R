@@ -4,7 +4,7 @@
 #' Aggregate spatio-temporal measurements of one raster stack with daily layers 
 #' for multiple years to a raster stack with monthly layers
 #' 
-#' @param path \code{character}. Path of file to use.
+#' @param files \code{character}. Path of files to use.
 #' @param mean \code{logical}.
 #' @param error \code{logical}.
 #' @param filename1 \code{character}. Filename for average monthly raster stack
@@ -19,21 +19,23 @@
 #' }
 #' @export summariseRaster
 #' @name summariseRaster
-summariseRaster <- function(path=getwd(), mean=TRUE, error=TRUE, 
+summariseRaster <- function(files, mean=TRUE, error=TRUE, 
                             filename1=NA, filename2=NA, 
                             overwrite=FALSE){
-  var <- strsplit(basename(path), split="_")[[1]][1]
-  time <- strsplit(basename(path), split="_")[[1]][2]
-  model <- strsplit(basename(path), split="_")[[1]][3]
-  region <- strsplit(strsplit(basename(path), split="_")[[1]][4], split=".")[[1]][1]
-  filename1 <- paste0("extdata/monthly_", var, "_", time, "_", model, "_", region, ".tif")
-  filename2 <- paste0("extdata/monthly_cv_", var, "_", time, "_", model, "_", region, ".tif")
-
+  #var <- strsplit(basename(files), split="_")[[1]][1]
+  #time <- strsplit(basename(files), split="_")[[1]][2]
+  #model <- strsplit(basename(files), split="_")[[1]][3]
+  #region <- strsplit(strsplit(basename(files), split="_")[[1]][4], split=".")[[1]][1]
+  #filename1 <- paste0("extdata/monthly_", var, "_", time, "_", model, "_", region, ".tif")
+  #filename2 <- paste0("extdata/monthly_cv_", var, "_", time, "_", model, "_", region, ".tif")
   if(overwrite==FALSE & file.exists(filename1)){
     avg <- raster::stack(filename1)
   } else{
-    data <- raster::stack(path)
-    
+    if(class(files) %in% c("RasterLayer", "RasterStack", "RasterBrick")){
+      data <- files
+    } else{
+      data <- raster::stack(files)
+    }
     # Get dates of file
     timeframes <- c("ref", "2050","2080","2100","2150")
     startyears <- c(1970,2036,2066,2086,2136)
