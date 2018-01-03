@@ -17,6 +17,7 @@
 #' @examples
 #' files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)
 #' summariseNC(files, startdate=2000, enddate=2009)
+#' @seealso [aggregateNC]
 #' @export summariseNC
 #' @name summariseNC
 summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("year", "month"),
