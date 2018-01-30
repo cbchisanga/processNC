@@ -1,7 +1,7 @@
 processNC - R Package for processing and analysing (large) NetCDF files in R
 ================
-Matthias Biber
-2017-12-01
+Matthias F. Biber
+2018-01-30
 
 Overview
 --------
@@ -18,9 +18,8 @@ For this, the package mainly consists of two functions:
 
 In addition, there is also a function called `summariseRaster`, which allows a similar implementation to the `summariseNC` function, but using raster files rather than NetCDF files.
 
-There are also two functions (`mergeNC` and `aggregateNC`), which together provide a much faster alternative to the `summariseNC` function, but those functions rely on the Climate Data Operators (CDO) software (<https://code.mpimet.mpg.de/projects/cdo>). This software needs to be installed to use those two functions in R.
+There are also two functions (`mergeNC` and `aggregateNC`), which together provide a much faster alternative to the `summariseNC` function, but those functions rely on the Climate Data Operators (CDO) software (<https://code.mpimet.mpg.de/projects/cdo>). This software needs to be installed if you want to use those two functions in R.
 
-<!-- You can learn more about the different functions in `vignette("processNC")`.-->
 Installation
 ------------
 
@@ -28,7 +27,7 @@ To *use* the package, it can be installed directly from GitHub using the `devtoo
 
 ``` r
 # If not yet installed, install the devtools package
-#install.packages("devtools")
+if(!"devtools" %in% installed.packages()[,"Package"]) install.packages("devtools")
 
 # Download the package from GitHub
 devtools::install_github("RS-eco/processNC")
@@ -37,16 +36,17 @@ devtools::install_github("RS-eco/processNC")
 Usage
 -----
 
-Load processNC package
+Load processNC & raster package
 
 ``` r
 library(processNC)
+library(raster)
 ```
 
 List NetCDF data files
 
 ``` r
-# List daily temperature files for Germany from 1979 till 2013 (EWEMBI ISIMIP2b data)
+# List daily temperature files for Germany from 1979 till 2013
 files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=T)
 
 # Show files
@@ -109,23 +109,21 @@ Summarise NetCDF file
 
 ``` r
 # Summarise daily NetCDF file for 10 years 
-summariseNC(files[4], startdate=2000, enddate=2009, group_col=c("month", "year"))
+s <- summariseNC(files[4], startdate=2001, enddate=2010, group_col=c("month", "year"))
+plot(s[[1]])
 ```
 
-    class       : RasterBrick 
-    dimensions  : 18, 15, 270, 12  (nrow, ncol, ncell, nlayers)
-    resolution  : 0.5, 0.5  (x, y)
-    extent      : 47.5, 55, 6, 15  (xmin, xmax, ymin, ymax)
-    coord. ref. : NA 
-    data source : in memory
-    names       :  January, February,    March,    April,      May,     June,     July,   August, September,  October, November, December 
-    min values  : 278.7788, 278.5410, 280.7607, 279.3333, 278.7059, 278.8946, 278.7549, 278.2934,  280.0584, 278.5822, 280.1925, 278.9029 
-    max values  : 284.4923, 284.1783, 285.9021, 284.4390, 284.3235, 284.5334, 284.3123, 283.7695,  285.2472, 284.1391, 285.0622, 284.1537 
+![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ``` r
 # Summarise daily NetCDF files for all years
 yearly_tas <- summariseNC(files, group_col="year")
+plot(yearly_tas[[1]])
+```
 
+![](README_files/figure-markdown_github/unnamed-chunk-6-1.png)
+
+``` r
 # Calculate mean annual temperature for Germany
 yearmean_tas <- as.data.frame(raster::cellStats(yearly_tas, stat="mean"))
 colnames(yearmean_tas) <- "mean"
@@ -143,15 +141,50 @@ head(yearmean_tas)
     5 1983 9.418830
     6 1984 8.307544
 
-<!--
 Summarise NetCDF file using CDO commands
 
+-   Merge files:
 
-```r
-#?mergeNC()
-#?aggregateNC()
+``` r
+temp <- tempfile(fileext=".nc")
+mergeNC(files=files, outfile=temp)
 ```
--->
+
+    Created file /tmp/Rtmp963M9A/file38073e13cf04.nc.
+
+``` r
+raster::stack(temp)
+```
+
+    class       : RasterStack 
+    dimensions  : 15, 18, 270, 12784  (nrow, ncol, ncell, nlayers)
+    resolution  : 0.5, 0.5  (x, y)
+    extent      : 6, 15, 47.5, 55  (xmin, xmax, ymin, ymax)
+    coord. ref. : +proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 
+    names       : X1979.01.02, X1979.01.03, X1979.01.04, X1979.01.05, X1979.01.06, X1979.01.07, X1979.01.08, X1979.01.09, X1979.01.10, X1979.01.11, X1979.01.12, X1979.01.13, X1979.01.14, X1979.01.15, X1979.01.16, ... 
+
+-   Aggregate files:
+
+``` r
+temp2 <- tempfile(fileext=".nc")
+aggregateNC(infile=temp, outfile=temp2, var="tas", startdate="2000", enddate="2009")
+```
+
+    Created file /tmp/Rtmp963M9A/file38076657a935.nc.
+
+``` r
+temp2 <- raster::stack(temp2)
+plot(temp2[[1]])
+```
+
+![](README_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+Summarise Raster file
+
+``` r
+summariseRaster(files[4], startdate=2001, enddate=2010, var="tas")
+```
+
 CellStats NetCDF file
 
 ``` r
@@ -176,19 +209,3 @@ mean_daily_temp$year <- lubridate::year(mean_daily_temp$date)
 mean_daily_temp$mean <- mean_daily_temp$mean - 273.15
 mean_annual_temp <- aggregate(mean ~ year, mean_daily_temp, mean)
 ```
-
-Summarise raster file
-
-<!--
-Need to update summariseRaster function, so it works more generally, compare with summariseNC.
-
-
-```r
-# Create raster stack
-library(raster)
-r_file <- stack(files[1])
-
-# Summarise Data
-summariseRaster(files=r_file)
-```
--->

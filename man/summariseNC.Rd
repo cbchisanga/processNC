@@ -38,5 +38,8 @@ to a raster stack or data.frame with desired spatial and temporal resolution
 }
 \examples{
 files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)
-summariseNC(files, startdate=2000, enddate=2009)
+summariseNC(files, startdate=2001, enddate=2010, cores=1)
+}
+\seealso{
+[aggregateNC]
 }

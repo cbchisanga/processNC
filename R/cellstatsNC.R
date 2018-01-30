@@ -13,7 +13,7 @@
 #' @return A dataframe with temporal values averaged over the specified area.
 #' @examples
 #' files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)
-#' cellstatsNC_old(files, startdate=2000, enddate=2010)
+#' cellstatsNC(files, startdate=2000, enddate=2010, cores=1)
 #' @export cellstatsNC
 #' @name cellstatsNC
 cellstatsNC <- function(files, startdate=NA, enddate=NA, ext="", cores=NA, filename='', stat="mean"){

@@ -4,8 +4,8 @@
 \alias{cellstatsNC}
 \title{Summarise values of one or multiple NetCDF Files over time and/or space}
 \usage{
-cellstatsNC(files, startdate = NA, enddate = NA, ext = "", fun = "mean",
-  cores = NA, filename = "")
+cellstatsNC(files, startdate = NA, enddate = NA, ext = "", cores = NA,
+  filename = "", stat = "mean")
 }
 \arguments{
 \item{files}{\code{character}. A filepath or list of filepaths. Filepath should lead to a NetCDF file.}
@@ -16,11 +16,11 @@ cellstatsNC(files, startdate = NA, enddate = NA, ext = "", fun = "mean",
 
 \item{ext}{\code{extent}. If present the NetCDF file is subset by this extent.}
 
-\item{fun}{\code{character}. Currently only works with mean.}
-
 \item{cores}{\code{integer}. Number of cores for parallel computing. If this argument is not provided, at least half the number of availabe cores will be used.}
 
 \item{filename}{\code{character}. Output filename of the averaged data. If this argument is not provided, result will not be written to disk.}
+
+\item{stat}{\code{character}. Currently only works with mean.}
 }
 \value{
 A dataframe with temporal values averaged over the specified area.
@@ -31,5 +31,5 @@ to a raster stack or data.frame with desired spatial and temporal resolution
 }
 \examples{
 files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)
-cellstatsNC_old(files, startdate=2000, enddate=2010)
+cellstatsNC(files, startdate=2000, enddate=2010, cores=1)
 }
