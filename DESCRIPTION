@@ -26,7 +26,7 @@ Imports:
 Suggests:
     knitr,
     rmarkdown
-License: GPL (>= 3) | file LICENSE
+License: MIT + file LICENSE
 LazyData: TRUE
 RoxygenNote: 6.0.1
 NeedsCompilation: no
