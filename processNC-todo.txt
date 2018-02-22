@@ -1,3 +1,4 @@
 - Add example for summariseRaster, mergeNC and aggregateNC to processNC Readme.
 - Adapt summariseRaster according to summariseNC
 - Adapt summariceNC???
+- Add writeNC function see ISIMIP_Output script!
