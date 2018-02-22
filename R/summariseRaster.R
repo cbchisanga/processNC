@@ -4,80 +4,94 @@
 #' Aggregate spatio-temporal measurements of one raster stack with daily layers 
 #' for multiple years to a raster stack with monthly layers
 #' 
-#' @param files \code{character}. Path of files to use.
-#' @param mean \code{logical}.
-#' @param error \code{logical}.
-#' @param filename1 \code{character}. Filename for average monthly raster stack
-#' @param filename2 \code{character}. Filename for monthly coefficient of variance raster stack
-#' @param overwrite \code{logical}. Should file be overwritten or not.
+#' @param files \code{character}. A filepath or list of filepaths. Filepath should lead to a NetCDF file.
+#' @param var \code{character}. Environmental variable provided.
+#' @param startdate \code{integer}. Start year.
+#' @param enddate \code{integer}. End year.
+#' @param ext \code{extent}. If present the NetCDF file is subset by this extent.
+#' @param filename1 \code{character}. Output filename of the averaged data. If this argument is not provided, result will not be written to disk.
+#' @param filename2 \code{character}. Output filename of the coefficient of variation. If this argument is not provided, the coefficient of variation will not be written to disk.
+#' @param format \code{character}. Output file type. See \code{\link[raster]{writeRaster}} for different Options. The default format is "GTiff".
+#' @param overwrite \code{logical}. If TRUE, existing files will be overwritten.
 #' @return A \code{numeric} raster stack with monthly layers of 
-#' aggregated data over specificed time period.
+#' aggregated data over specificed time period and area.
 #' 
 #' @examples
-#' \dontrun{
-#' summariseRaster()
-#' }
+#' files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)
+#' summariseRaster(files[4], startdate=2001, enddate=2010, var="tas")
 #' @export summariseRaster
 #' @name summariseRaster
-summariseRaster <- function(files, mean=TRUE, error=TRUE, 
-                            filename1=NA, filename2=NA, 
-                            overwrite=FALSE){
-  #var <- strsplit(basename(files), split="_")[[1]][1]
-  #time <- strsplit(basename(files), split="_")[[1]][2]
-  #model <- strsplit(basename(files), split="_")[[1]][3]
-  #region <- strsplit(strsplit(basename(files), split="_")[[1]][4], split=".")[[1]][1]
-  #filename1 <- paste0("extdata/monthly_", var, "_", time, "_", model, "_", region, ".tif")
-  #filename2 <- paste0("extdata/monthly_cv_", var, "_", time, "_", model, "_", region, ".tif")
+summariseRaster <- function(files, startdate=NA, enddate=NA, ext=NA, var,
+                            filename1='', filename2='', format="GTiff", overwrite=FALSE){
   if(overwrite==FALSE & file.exists(filename1)){
     avg <- raster::stack(filename1)
   } else{
     if(class(files) %in% c("RasterLayer", "RasterStack", "RasterBrick")){
       data <- files
     } else{
-      data <- raster::stack(files)
+      if(length(files) > 1){
+        data <- lapply(files, raster::stack)
+        data <- raster::stack(data)
+      } else{
+        data <- raster::stack(files)
+      }
     }
-    # Get dates of file
-    timeframes <- c("ref", "2050","2080","2100","2150")
-    startyears <- c(1970,2036,2066,2086,2136)
-    endyears <- c(1999,2065,2095,2115,2165)
     
-    time <- grep(time, timeframes)
-    startyear <- startyears[time]
-    endyear <- endyears[time]
+    mask <- NA
+    if(class(ext) != "Extent"){
+      if(class(ext) == "SpatialPolygonsDataFrame"){
+        mask <- ext
+        ext <- raster::extent(ext)
+      } else if(class(ext) == "RasterLayer"){
+        mask <- ext
+        ext <- raster::extent(ext)
+      } else if(!anyNA(ext)){
+        ext <- raster::extent(ext)
+      }
+    }
     
-    # Convert start and endyear to dates
-    startdate <- as.Date(paste0(startyear, "-01-01"))
-    enddate <-  as.Date(paste0(endyear, "-12-31"))
+    # Crop data by extent
+    if(class(ext) == "Extent"){
+      data <- raster::mask(raster::crop(data, ext), ext)
+    }  
     
     # Create list of dates and set dates of raster stack
-    dates <- seq(startdate, enddate, by="day")
+    dates <- as.Date(gsub("X", "", names(data)), format="%Y.%m.%d")
     data <- raster::setZ(data, dates, 'date')
     
-    # Create function as.month
-    as.month <- function(x) as.numeric(floor(lubridate::month(x)))
+    # Define start date
+    if(!is.na(startdate) & class(startdate) != "Date"){
+      startdate <- as.Date(paste0(startdate, "-01-01"))
+    }
     
-    requireNamespace("zoo")
+    # Define end date
+    if(!is.na(enddate) & class(enddate) != "Date"){
+      enddate <-  as.Date(paste0(enddate, "-12-31"))
+    }
+    
+    # Subset dataset by start and enddate
+    data_sub <- data[[which(raster::getZ(data) >= startdate & raster::getZ(data) <= enddate)]]
+    
     if(var %in% c("hurs", "huss", "tas", "sfcWind")){
-      avg <- raster::zApply(data, by=as.yearmon, fun=mean, name='months', na.rm=TRUE)
+      avg <- raster::zApply(data, by=zoo::as.yearmon, fun=mean, name='months', na.rm=TRUE)
     } else if(var == "pr"){
-      avg <- raster::zApply(data, by=as.yearmon, fun=sum, name='months', na.rm=TRUE)
+      avg <- raster::zApply(data, by=zoo::as.yearmon, fun=sum, name='months', na.rm=TRUE)
     } else if(var == "tasmax"){
-      avg <- raster::zApply(data, by=as.yearmon, fun=max, name='months', na.rm=TRUE)
+      avg <- raster::zApply(data, by=zoo::as.yearmon, fun=max, name='months', na.rm=TRUE)
     } else if(var == "tasmin"){
-      avg <- raster::zApply(data, by=as.yearmon, fun=min, name='months', na.rm=TRUE)
+      avg <- raster::zApply(data, by=zoo::as.yearmon, fun=min, name='months', na.rm=TRUE)
     }
-    avg <- raster::zApply(avg, by=as.month, fun=mean, name='months', na.rm=TRUE)
+    avg <- raster::zApply(avg, by=function(x) as.numeric(floor(lubridate::month(x))), 
+                          fun=mean, name='months', na.rm=TRUE)
     
-    # Calculate mean per year and mean, sum, min, max per month
-    if(mean==TRUE){
-      raster::writeRaster(avg, filename=filename1, 
-                  format="GTiff", overwrite=overwrite)
+    if(filename1 != ""){
+      raster::writeRaster(avg, filename=filename1, format=format, overwrite=overwrite)
     }
-    if(error==TRUE){
+    if(filename2 != ""){
       cv <- raster::zApply(data, by=as.yearmon, fun=cv, name='months', na.rm=TRUE)
-      cv <- raster::zApply(cv, by=as.month, fun=sum, name='months', na.rm=TRUE)
-      raster::writeRaster(cv, filename=filename2, 
-                  format="GTiff", overwrite=overwrite)
+      cv <- raster::zApply(cv, by=function(x) as.numeric(floor(lubridate::month(x))), 
+                           fun=sum, name='months', na.rm=TRUE)
+      raster::writeRaster(cv, filename=filename2, format=format, overwrite=overwrite)
     }
   }; removeTmpFiles(h=0.01)
   return(avg)

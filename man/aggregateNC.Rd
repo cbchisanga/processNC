@@ -4,14 +4,14 @@
 \alias{aggregateNC}
 \title{Aggregate one or multiple NetCDF Files over time and/or space}
 \usage{
-aggregateNC(infile, outfile, var, startyear, endyear)
+aggregateNC(infile, outfile, var, startdate, enddate)
 }
 \arguments{
 \item{infile}{\code{character}. A filepath or list of filepaths. Filepath should lead to a NetCDF file.}
 
 \item{outfile}{\code{character}. Output filename of the averaged data.}
 
-\item{var}{\code{character}. Variable which is used, one of tasmax, tasmin and pr.}
+\item{var}{\code{character}. Variable which is used, one of tas, tasmin, tasmax and pr.}
 
 \item{startdate}{\code{integer}. Start year.}
 
@@ -22,4 +22,10 @@ A NetCDF with temporal values averaged over the specified area.
 }
 \description{
 Aggregate one or multiple NetCDF Files over time and/or space
+}
+\examples{
+file <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)[4]
+temp <- tempfile(fileext=".nc")
+aggregateNC(infile=file, outfile=temp, var="tas", startdate="2001", enddate="2010")
+raster::stack(temp)
 }

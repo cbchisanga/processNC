@@ -16,13 +16,14 @@
 #' @return A raster stack with monthly layers of aggregated data over the specified time period and area.
 #' @examples
 #' files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)
-#' summariseNC(files, startdate=2000, enddate=2009)
+#' summariseNC(files, startdate=2001, enddate=2010, cores=1)
 #' @seealso [aggregateNC]
 #' @export summariseNC
 #' @name summariseNC
 summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("year", "month"),
                         cores=NA, filename1='', filename2='', 
                         format="GTiff", overwrite=FALSE){
+  . <- NULL; x <- NULL
   if(overwrite==FALSE & filename1!="" & file.exists(filename1)){
     r_z <- raster::stack(filename1)
   } else{
@@ -105,6 +106,7 @@ summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("ye
     } else if(class(enddate) != "Date"){
       enddate <-  as.Date(paste0(enddate, "-12-31"))
     }
+    
     # Calculate the number of cores available and leave one for basic use
     if(is.na(cores)){cores <- ceiling(0.55*parallel::detectCores())}
     
@@ -181,42 +183,33 @@ summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("ye
         data$month <- lubridate::month(data$date)
         # Remove date column for summary
         data <- subset(data, select=-date)
-        z_y <- data %>%
-          group_by_at(vars(c(group_col, "y"))) %>%
-          summarise_all(.funs=.funs) %>%
-          as.data.frame()
-        z_cv <- data %>% group_by_at(vars(c(group_col, "y"))) %>%
-          summarise_all(funs(raster::cv(., na.rm = TRUE))) %>%
-          as.data.frame()
+        z_y <- dplyr::group_by_at(data, vars(c(group_col, "y")))
+        z_y <- as.data.frame(dplyr::summarise_all(z_y, .funs=.funs))
+        z_cv <- dplyr::group_by_at(data, vars(c(group_col, "y")))
+        z_cv <- as.data.frame(dplyr::summarise_all(z_cv, funs(raster::cv(., na.rm = TRUE))))
         z <- list()
-        z$avg <- z_y %>% group_by(month) %>%
-          summarise_all(funs(mean(., na.rm = TRUE))) %>% 
-          as.data.frame()
-        z$cv <- z_cv %>% group_by(month) %>%
-          summarise_all(funs(mean(., na.rm = TRUE))) %>% 
-          as.data.frame()
+        z_y <- group_by(z_y, month)
+        z$avg <- as.data.frame(summarise_all(z_y, funs(mean(., na.rm = TRUE))))
+        z_cv <- group_by(z_cv, month)
+        z$cv <- as.data.frame(summarise_all(z_cv, funs(mean(., na.rm = TRUE))))
       } else if(group_col == "month"){
         data$month <- lubridate::month(data$date)
         # Remove date column for summary
         data <- subset(data, select=-date)
         z <- list()
-        z$avg <- data %>% group_by_at(vars(group_col, "y")) %>% 
-          summarise_all(.funs=.funs) %>% 
-          as.data.frame()
-        z$cv <- data %>% group_by_at(vars(group_col, "y")) %>% 
-          summarise_all(funs(raster::cv(., na.rm = TRUE))) %>% 
-          as.data.frame()
+        z_avg <- group_by(data, vars(group_col, "y"))
+        z$avg <- as.data.frame(summarise_all(z_avg, .funs=.funs))
+        z_cv <- group_by(data, vars(group_col, "y"))
+        z$cv <- as.data.frame(summarise_all(z_cv, funs(raster::cv(., na.rm = TRUE))))
       } else if(group_col == "year"){
         data$year <- lubridate::year(data$date)
         # Remove date column for summary
         data <- subset(data, select=-date)
         z <- list()
-        z$avg <- data  %>% group_by_at(vars(group_col, "y")) %>% 
-          summarise_all(.funs=.funs) %>% 
-          as.data.frame()
-        z$cv <- data %>% group_by_at(vars(group_col, "y")) %>% 
-          summarise_all(funs(raster::cv(., na.rm = TRUE))) %>% 
-          as.data.frame()
+        z_avg <- group_by_at(data, vars(group_col, "y"))
+        z$avg <- as.data.frame(summarise_all(z_avg, .funs=.funs))
+        z_cv <- group_by_at(data, vars(group_col, "y")) 
+        z$cv <- as.data.frame(summarise_all(z_cv, funs(raster::cv(., na.rm = TRUE))))
       }
       return(z)
     })
@@ -224,7 +217,7 @@ summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("ye
     parallel::stopCluster(cl)
     
     # Turn into a dataframe
-    data <- do.call("c", z); rm(z)
+    data <- do.call("c", z)#; rm(z)
     avg <- seq(1,length(data), by=2)
     cv <- seq(2,length(data), by=2)
     data1 <- do.call("rbind", data[avg])
@@ -236,12 +229,20 @@ summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("ye
     data$x <- as.numeric(data$x)
     data$y <- as.numeric(data$y)
     if("month" %in% group_col){
-      r_z <- data %>% dplyr::select(-cv) %>% tidyr::spread(month, avg)
-      if("year" %in% group_col){r_z <- r_z %>% dplyr::select(-year)}
+      r_z <- dplyr::select(data, -cv) 
+      r_z <- tidyr::spread(r_z, month, avg)
+      if("year" %in% group_col){
+        r_z <- dplyr::select(r_z, -year)
+      }
+      r_z <- r_z[,c(2,1,3:ncol(r_z))]
       r_z <- raster::rasterFromXYZ(r_z)
       names(r_z) <- month.name
-      r_cv <- data %>% dplyr::select(-avg) %>% tidyr::spread(month, cv)
-      if("year" %in% group_col){r_cv <- r_cv %>% dplyr::select(-year)}
+      r_cv <-dplyr::select(data, -avg)
+      r_cv <- tidyr::spread(r_cv, month, cv)
+      if("year" %in% group_col){
+        r_cv <- dplyr::select(r_cv, -year)
+      }
+      r_cv <- r_cv[,c(2,1,3:ncol(r_cv))]
       r_cv <- raster::rasterFromXYZ(r_cv)
       names(r_cv) <- month.name
       if(class(mask) == "SpatialPolygonsDataFrame" | class(mask) == "RasterLayer"){
@@ -249,9 +250,15 @@ summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("ye
         r_cv <- raster::mask(r_cv, mask)
       }
     } else if(identical(group_col, "year")){
-      r_z <- raster::rasterFromXYZ(data %>% dplyr::select(-cv) %>% tidyr::spread(year, avg))
+      r_z <- dplyr::select(data, -cv)
+      r_z <- tidyr::spread(r_z, year, avg)
+      r_z <- r_z[,c(2,1,3:ncol(r_z))]
+      r_z <- raster::rasterFromXYZ(r_z)
       names(r_z) <- unique(data$year)
-      r_cv <- raster::rasterFromXYZ(data %>% dplyr::select(-avg) %>% tidyr::spread(year, cv))
+      r_cv <- dplyr::select(data, -avg)
+      r_cv <- tidyr::spread(r_cv, year, cv)
+      r_cv <- r_cv[,c(2,1,3:ncol(r_cv))]
+      r_cv <- raster::rasterFromXYZ(r_cv)
       names(r_cv) <- unique(data$year)
       if(class(mask) == "SpatialPolygonsDataFrame" | class(mask) == "RasterLayer"){
         r_z <- raster::mask(r_z, mask)

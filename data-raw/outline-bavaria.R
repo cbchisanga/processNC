@@ -8,4 +8,4 @@ bavaria <- deu[deu$NAME_1 == "Bayern",]
 plot(bavaria)
 
 #' Save to file
-save(bavaria, file="data/bavaria.rda")
+save(bavaria, file="data/bavaria.rda", compress="xz")

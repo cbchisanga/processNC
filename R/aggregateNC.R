@@ -3,10 +3,14 @@
 #' @param infile \code{character}. A filepath or list of filepaths. Filepath should lead to a NetCDF file.
 #' @param startdate \code{integer}. Start year.
 #' @param enddate \code{integer}. End year.
-#' @param var \code{character}. Variable which is used, one of tasmax, tasmin and pr.
+#' @param var \code{character}. Variable which is used, one of tas, tasmin, tasmax and pr.
 #' @param outfile \code{character}. Output filename of the averaged data.
 #' @return A NetCDF with temporal values averaged over the specified area.
 #' @examples
+#' file <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)[4]
+#' temp <- tempfile(fileext=".nc")
+#' aggregateNC(infile=file, outfile=temp, var="tas", startdate="2001", enddate="2010")
+#' raster::stack(temp)
 #' @export aggregateNC
 #' @name aggregateNC
 aggregateNC <- function(
@@ -14,8 +18,8 @@ aggregateNC <- function(
   infile ##<< character vector: names of the files to aggregate.
   , outfile ##<< character: path to save the results files to. 
   , var ##<< one of tasmax, tasmin, pr
-  ,startyear
-  ,endyear
+  ,startdate
+  ,enddate
   )
   ##description<<
   ## This function aggregates time periods in netCDF files. Basically it is just a
@@ -31,7 +35,7 @@ aggregateNC <- function(
   
   ## determine cdo command
   cdoCmd <- paste0('cdo -ymonmean -mon', fun, ' -selyear,', 
-                   paste0(seq(startyear, endyear), collapse=","), " ", infile, ' ', outfile)
+                   paste0(seq(startdate, enddate), collapse=","), " ", infile, ' ', outfile)
   
   ##run aggregation
   system(cdoCmd)

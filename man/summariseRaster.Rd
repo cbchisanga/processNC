@@ -4,32 +4,37 @@
 \alias{summariseRaster}
 \title{Aggregate values of multiple NetCDF Files}
 \usage{
-summariseRaster(path = getwd(), mean = TRUE, error = TRUE,
-  filename1 = NA, filename2 = NA, overwrite = FALSE)
+summariseRaster(files, startdate = NA, enddate = NA, ext = NA, var,
+  filename1 = "", filename2 = "", format = "GTiff", overwrite = FALSE)
 }
 \arguments{
-\item{path}{\code{character}. Path of file to use.}
+\item{files}{\code{character}. A filepath or list of filepaths. Filepath should lead to a NetCDF file.}
 
-\item{mean}{\code{logical}.}
+\item{startdate}{\code{integer}. Start year.}
 
-\item{error}{\code{logical}.}
+\item{enddate}{\code{integer}. End year.}
 
-\item{filename1}{\code{character}. Filename for average monthly raster stack}
+\item{ext}{\code{extent}. If present the NetCDF file is subset by this extent.}
 
-\item{filename2}{\code{character}. Filename for monthly coefficient of variance raster stack}
+\item{var}{\code{character}. Environmental variable provided.}
 
-\item{overwrite}{\code{logical}. Should file be overwritten or not.}
+\item{filename1}{\code{character}. Output filename of the averaged data. If this argument is not provided, result will not be written to disk.}
+
+\item{filename2}{\code{character}. Output filename of the coefficient of variation. If this argument is not provided, the coefficient of variation will not be written to disk.}
+
+\item{format}{\code{character}. Output file type. See \code{\link[raster]{writeRaster}} for different Options. The default format is "GTiff".}
+
+\item{overwrite}{\code{logical}. If TRUE, existing files will be overwritten.}
 }
 \value{
 A \code{numeric} raster stack with monthly layers of 
-aggregated data over specificed time period.
+aggregated data over specificed time period and area.
 }
 \description{
 Aggregate spatio-temporal measurements of one raster stack with daily layers 
 for multiple years to a raster stack with monthly layers
 }
 \examples{
-\dontrun{
-summariseRaster()
-}
+files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)
+summariseRaster(files[4], startdate=2001, enddate=2010, var="tas")
 }
