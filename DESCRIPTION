@@ -2,7 +2,7 @@ Package: processNC
 Type: Package
 Title: R Package for processing large NetCDF files in R
 Version: 0.0.1
-Date: 2018-01-30
+Date: 2018-03-07
 Authors@R: 
     person("Matthias F.", "Biber", email = "RS-eco@posteo.de", role = c("cre", "aut"))
 Maintainer: Matthias F. Biber <RS-eco@posteo.de>
@@ -20,6 +20,7 @@ Imports:
     magrittr,
     abind, 
     readr, 
+    rlang,
     parallel,
     utils,
     zoo

@@ -9,7 +9,7 @@
 #' @title R Package for processing large NetCDF files in R
 #' @author Matthias Biber
 #'
-#' @import ncdf4 raster sp parallel
+#' @import ncdf4 raster sp parallel rlang
 #' @importFrom tidyselect one_of
 #' @importFrom magrittr %>%
 #' @importFrom readr read_csv write_csv

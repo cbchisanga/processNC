@@ -4,10 +4,12 @@
 #' @param outfile \code{character}. Output filename of the merged data.
 #' @return A NetCDF file containing all of the merged data.
 #' @examples
+#' \dontrun{
 #' files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)
 #' temp <- tempfile(fileext=".nc")
 #' mergeNC(files=files, outfile=temp)
-#' raster::stack(temp)
+#' raster::stack(temp) 
+#' }
 #' @export mergeNC
 #' @name mergeNC
 mergeNC <- function(

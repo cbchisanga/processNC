@@ -7,10 +7,12 @@
 #' @param outfile \code{character}. Output filename of the averaged data.
 #' @return A NetCDF with temporal values averaged over the specified area.
 #' @examples
+#' \dontrun{
 #' file <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)[4]
 #' temp <- tempfile(fileext=".nc")
 #' aggregateNC(infile=file, outfile=temp, var="tas", startdate="2001", enddate="2010")
 #' raster::stack(temp)
+#' }
 #' @export aggregateNC
 #' @name aggregateNC
 aggregateNC <- function(
