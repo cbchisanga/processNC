@@ -18,8 +18,10 @@ A NetCDF file containing all of the merged data.
 Merge multiple NetCDF files into one
 }
 \examples{
+\dontrun{
 files <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)
 temp <- tempfile(fileext=".nc")
 mergeNC(files=files, outfile=temp)
-raster::stack(temp)
+raster::stack(temp) 
+}
 }

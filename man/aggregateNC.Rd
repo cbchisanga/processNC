@@ -24,8 +24,10 @@ A NetCDF with temporal values averaged over the specified area.
 Aggregate one or multiple NetCDF Files over time and/or space
 }
 \examples{
+\dontrun{
 file <- list.files(paste0(system.file(package="processNC"), "/extdata"), full.names=TRUE)[4]
 temp <- tempfile(fileext=".nc")
 aggregateNC(infile=file, outfile=temp, var="tas", startdate="2001", enddate="2010")
 raster::stack(temp)
+}
 }
