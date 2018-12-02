@@ -5,7 +5,8 @@
 \title{Aggregate values of multiple NetCDF Files}
 \usage{
 summariseRaster(files, startdate = NA, enddate = NA, ext = NA, var,
-  filename1 = "", filename2 = "", format = "GTiff", overwrite = FALSE)
+  filename1 = "", filename2 = "", format = "GTiff",
+  overwrite = FALSE)
 }
 \arguments{
 \item{files}{\code{character}. A filepath or list of filepaths. Filepath should lead to a NetCDF file.}

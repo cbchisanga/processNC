@@ -1,6 +1,6 @@
 ---
 title: "processNC - R Package for processing and analysing (large) NetCDF files in R"
-author: "Matthias F. Biber"
+author: "RS-eco"
 date: "`r Sys.Date()`"
 output: github_document
 ---
@@ -98,7 +98,7 @@ Summarise NetCDF file using CDO commands
 
 * Merge files:
 
-```{r}
+```{r, eval=F}
 temp <- tempfile(fileext=".nc")
 mergeNC(files=files, outfile=temp)
 raster::stack(temp)
@@ -106,7 +106,7 @@ raster::stack(temp)
 
 * Aggregate files:
 
-```{r}
+```{r, eval=F}
 temp2 <- tempfile(fileext=".nc")
 aggregateNC(infile=temp, outfile=temp2, var="tas", startdate="2000", enddate="2009")
 temp2 <- raster::stack(temp2)
@@ -121,7 +121,7 @@ summariseRaster(files[4], startdate=2001, enddate=2010, var="tas")
 
 CellStats NetCDF file
 
-```{r}
+```{r, eval=F}
 # Summarise daily NetCDF file for 10 years and show first 6 values
 head(cellstatsNC(files, startdate=2000, enddate=2009))
 

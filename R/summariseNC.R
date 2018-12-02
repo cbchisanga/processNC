@@ -79,7 +79,7 @@ summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("ye
     timeref <- as.Date(strsplit(nc$dim[[nc$ndims]]$units, " ")[[1]][3]) 
     if(ncdf4::ncvar_get(nc, nc$dim$time)[1] == 0){
       time <- timeref + ncdf4::ncvar_get(nc, nc$dim$time)
-    }else if (ncdf4::ncvar_get(nc, nc$dim$time)[1] == 1){
+    } else if (ncdf4::ncvar_get(nc, nc$dim$time)[1] != 1){
       time <- timeref + ncdf4::ncvar_get(nc, nc$dim$time) - 1
     }
     # Close NC file again
@@ -98,7 +98,7 @@ summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("ye
       timeref <- as.Date(strsplit(nc$dim[[nc$ndims]]$units, " ")[[1]][3]) 
       if(ncdf4::ncvar_get(nc, nc$dim$time)[1] == 0){
         time <- timeref + ncdf4::ncvar_get(nc, nc$dim$time)
-      }else if (ncdf4::ncvar_get(nc, nc$dim$time)[1] == 1){
+      }else if (ncdf4::ncvar_get(nc, nc$dim$time)[1] != 1){
         time <- timeref + ncdf4::ncvar_get(nc, nc$dim$time) - 1
       }
       enddate <- time[length(time)]
@@ -139,7 +139,7 @@ summariseNC <- function(files, startdate=NA, enddate=NA, ext=NA, group_col=c("ye
         timeref <- as.Date(strsplit(nc$dim[[nc$ndims]]$units, " ")[[1]][3]) 
         if(ncdf4::ncvar_get(nc, nc$dim$time)[1] == 0){
           time <- timeref + ncdf4::ncvar_get(nc, var$dim[[ndims]]$name)
-        }else if (ncdf4::ncvar_get(nc, nc$dim$time)[1] == 1){
+        } else if (ncdf4::ncvar_get(nc, nc$dim$time)[1] != 0){
           time <- timeref + ncdf4::ncvar_get(nc, var$dim[[ndims]]$name) - 1
         }
         

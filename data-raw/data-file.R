@@ -12,5 +12,5 @@ s <- brick(lapply(1:12, function(x) setValues(r, G0dm[x]+100*rnorm(ncell(r)))))
 filename <- "atttest_types.nc"
 dim <- ncdim_def( "X", "inches", 1:12 )
 var <- ncvar_def( "Data", "unitless", dim, -1 ) 
-ncnew <- nc_create( filename, var )
+ncnew <- nc_create(filename, var)
   

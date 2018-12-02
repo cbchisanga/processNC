@@ -1,7 +1,7 @@
 processNC - R Package for processing and analysing (large) NetCDF files in R
 ================
-Matthias F. Biber
-2018-01-30
+RS-eco
+2018-11-06
 
 Overview
 --------
@@ -148,36 +148,17 @@ Summarise NetCDF file using CDO commands
 ``` r
 temp <- tempfile(fileext=".nc")
 mergeNC(files=files, outfile=temp)
-```
-
-    Created file /tmp/Rtmp963M9A/file38073e13cf04.nc.
-
-``` r
 raster::stack(temp)
 ```
-
-    class       : RasterStack 
-    dimensions  : 15, 18, 270, 12784  (nrow, ncol, ncell, nlayers)
-    resolution  : 0.5, 0.5  (x, y)
-    extent      : 6, 15, 47.5, 55  (xmin, xmax, ymin, ymax)
-    coord. ref. : +proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 
-    names       : X1979.01.02, X1979.01.03, X1979.01.04, X1979.01.05, X1979.01.06, X1979.01.07, X1979.01.08, X1979.01.09, X1979.01.10, X1979.01.11, X1979.01.12, X1979.01.13, X1979.01.14, X1979.01.15, X1979.01.16, ... 
 
 -   Aggregate files:
 
 ``` r
 temp2 <- tempfile(fileext=".nc")
 aggregateNC(infile=temp, outfile=temp2, var="tas", startdate="2000", enddate="2009")
-```
-
-    Created file /tmp/Rtmp963M9A/file38076657a935.nc.
-
-``` r
 temp2 <- raster::stack(temp2)
 plot(temp2[[1]])
 ```
-
-![](README_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 Summarise Raster file
 
@@ -190,17 +171,7 @@ CellStats NetCDF file
 ``` r
 # Summarise daily NetCDF file for 10 years and show first 6 values
 head(cellstatsNC(files, startdate=2000, enddate=2009))
-```
 
-          mean       date
-    1 273.7878 2000-01-01
-    2 274.9809 2000-01-02
-    3 275.6813 2000-01-03
-    4 276.3606 2000-01-04
-    5 277.3515 2000-01-05
-    6 277.0308 2000-01-06
-
-``` r
 # Summarise daily NetCDF files without time limit
 mean_daily_temp <- cellstatsNC(files, stat="mean")
 

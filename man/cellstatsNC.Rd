@@ -4,8 +4,8 @@
 \alias{cellstatsNC}
 \title{Summarise values of one or multiple NetCDF Files over time and/or space}
 \usage{
-cellstatsNC(files, startdate = NA, enddate = NA, ext = "", cores = NA,
-  filename = "", stat = "mean")
+cellstatsNC(files, startdate = NA, enddate = NA, ext = "",
+  cores = NA, filename = "", stat = "mean")
 }
 \arguments{
 \item{files}{\code{character}. A filepath or list of filepaths. Filepath should lead to a NetCDF file.}

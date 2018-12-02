@@ -4,3 +4,5 @@ data-raw
 ^README\.Rmd$
 README_files
 ^README-.*\.png$
+TODO.txt
+writeNC.R
